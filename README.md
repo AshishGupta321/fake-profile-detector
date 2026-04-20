@@ -37,9 +37,20 @@ An AI-based system to detect fake (bot) social media profiles using behavioral a
 
 ## 🧪 Current Status
 
-- ✅ UI completed
-- ✅ API integration completed
-- ⏳ ML model integration (in progress)
+- ✅ UI completed (Streamlit)
+- ✅ Backend API developed (Flask)
+- ✅ ML model trained and integrated
+- ✅ End-to-end pipeline working (UI → API → Model → Output)
+
+---
+
+## 🚀 Next Steps
+
+- 🔧 Improve model accuracy with better features / dataset
+- 📊 Add confidence score / probability to predictions
+- 🎨 Enhance UI with better styling and user experience
+- 🌐 Deploy application online (Streamlit Cloud / Render)
+- 📸 Add screenshots and demo to README
 
 ---
 
