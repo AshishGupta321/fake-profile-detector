@@ -1,57 +1,63 @@
 import streamlit as st
 import requests
+import math
 
 st.title("🤖 Fake Profile Detector")
 
-followers = st.number_input("Followers", min_value=0)
-following = st.number_input("Following", min_value=0)
-tweets = st.number_input("Total Tweets", min_value=0)
-account_age = st.number_input("Account Age (days)", min_value=1)
+# Inputs
+verified = st.selectbox("Verified Account", [0, 1])
+followers = st.number_input("Follower Count", min_value=0)
+retweets = st.number_input("Retweet Count", min_value=0)
+mentions = st.number_input("Mention Count", min_value=0)
+
+# Feature engineering (same as train.py)
+log_followers = 0 if followers == 0 else math.log(followers)
+retweet_log = math.log(retweets + 1)
+mention_log = math.log(mentions + 1)
+engagement = (retweets + mentions) / (followers + 1)
 
 if st.button("Check"):
     try:
         response = requests.post(
             "http://127.0.0.1:5000/predict",
             json={
-                "followers": followers,
-                "following": following,
-                "tweets": tweets,
-                "account_age": account_age
+                "Verified": verified,
+                "log_followers": log_followers,
+                "retweet_log": retweet_log,
+                "mention_log": mention_log,
+                "engagement": engagement
             }
         )
 
-        # 🔥 IMPORTANT CHECK
         if response.status_code != 200:
-            st.error("Backend error. Check API.")
+            st.error("Backend error")
             st.write(response.text)
         else:
             result = response.json()
 
-            # ✅ Styled Output
-            if result["prediction"] == "Bot":
-                st.error(f"⚠️ Bot Detected\nConfidence: {result['confidence']}")
+            # Output
+            if result["prediction"] == 1:
+                st.error("🚨 Bot Detected")
             else:
-                st.success(f"✅ Real User\nConfidence: {result['confidence']}")
+                st.success("✅ Real User")
 
             # 📊 Graph
-            st.subheader("📊 Profile Stats")
-            data = {
+            st.subheader("📊 Activity Stats")
+            st.bar_chart({
                 "Followers": followers,
-                "Following": following,
-                "Tweets": tweets
-            }
-            st.bar_chart(data)
+                "Retweets": retweets,
+                "Mentions": mentions
+            })
 
             # 🧠 Explanation
-            if result["prediction"] == "Bot":
-                st.subheader("🧠 Why this might be a bot:")
-                
+            if result["prediction"] == 1:
+                st.subheader("🧠 Possible reasons:")
                 if followers < 50:
-                    st.write("- Low number of followers")
-                if tweets > 100:
-                    st.write("- High activity level")
-                if following > followers:
-                    st.write("- Unusual follower/following ratio")
+                    st.write("- Low followers")
+                if retweets > 100:
+                    st.write("- High retweet activity")
+                if mentions > 50:
+                    st.write("- High mention activity")
 
     except Exception as e:
         st.error(f"Error: {e}")
